@@ -1,3 +1,90 @@
 package main
 
-func main() {}
+import (
+	"crypto/rand"
+	"encoding/base64"
+	"fmt"
+	"io"
+	"net/http"
+)
+
+type URLService struct {
+	urls map[string]string
+	idGenerator func() (string, error)
+}
+
+func generateID() (string, error) {
+	b := make([]byte, 6)
+
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+
+	return base64.RawURLEncoding.EncodeToString(b), nil
+}
+
+
+func (service *URLService) generateID() (string, error) {
+    if service.idGenerator != nil {
+        return service.idGenerator()
+    }
+
+    return generateID()
+}
+
+func (service *URLService) getMethod(res http.ResponseWriter, req *http.Request) {
+
+	id := req.PathValue("id")
+	originalURL, exists := service.urls[id]
+	if !exists {
+		http.NotFound(res, req)
+		return
+	}
+	http.Redirect(res, req, originalURL, http.StatusTemporaryRedirect)
+
+}
+
+func (service *URLService) postMethod(res http.ResponseWriter, req *http.Request) {
+
+	// 1. Читаем исходный URL из тела запроса
+	data, err := io.ReadAll(req.Body)
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	originalURL := string(data)
+
+	// 2. Генерируем случайную строку id, которую затем положим в мапу
+	strId, err := service.generateID()
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	service.urls[strId] = originalURL
+
+	body := "http://" + req.Host + "/" + strId
+
+	// 3. Выводим в печать для клиента
+	res.Header().Set("Content-Type", "text/plain")
+	res.WriteHeader(http.StatusCreated)
+	fmt.Fprint(res, body)
+}
+
+func main() {
+
+	service := &URLService{
+		urls: make(map[string]string),
+	}
+
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("POST /{$}", service.postMethod)
+	mux.HandleFunc("GET /{id}", service.getMethod)
+
+	err := http.ListenAndServe(":8080", mux)
+	if err != nil {
+		panic(err)
+	}
+}

@@ -4,12 +4,13 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"github.com/go-chi/chi/v5"
 	"io"
 	"net/http"
 )
 
 type URLService struct {
-	urls map[string]string
+	urls        map[string]string
 	idGenerator func() (string, error)
 }
 
@@ -24,13 +25,12 @@ func generateID() (string, error) {
 	return base64.RawURLEncoding.EncodeToString(b), nil
 }
 
-
 func (service *URLService) generateID() (string, error) {
-    if service.idGenerator != nil {
-        return service.idGenerator()
-    }
+	if service.idGenerator != nil {
+		return service.idGenerator()
+	}
 
-    return generateID()
+	return generateID()
 }
 
 func (service *URLService) getMethod(res http.ResponseWriter, req *http.Request) {
@@ -77,13 +77,12 @@ func main() {
 	service := &URLService{
 		urls: make(map[string]string),
 	}
+	r := chi.NewRouter()
 
-	mux := http.NewServeMux()
+	r.Post("/", service.postMethod)
+	r.Get("/{id}", service.getMethod)
 
-	mux.HandleFunc("POST /{$}", service.postMethod)
-	mux.HandleFunc("GET /{id}", service.getMethod)
-
-	err := http.ListenAndServe(":8080", mux)
+	err := http.ListenAndServe(":8080", r)
 	if err != nil {
 		panic(err)
 	}

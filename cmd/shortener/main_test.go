@@ -15,7 +15,7 @@ func TestGetMethod(t *testing.T) {
 	type want struct {
 		code        int
 		contentType string
-		realUrl     string
+		srealURL    string
 	}
 	tests := []struct {
 		name    string
@@ -29,7 +29,7 @@ func TestGetMethod(t *testing.T) {
 			want: want{
 				code:        http.StatusTemporaryRedirect,
 				contentType: "text/html; charset=utf-8",
-				realUrl:     "https://practicum.yandex.ru/",
+				srealURL:    "https://practicum.yandex.ru/",
 			},
 			service: URLService{
 				urls: map[string]string{
@@ -44,7 +44,7 @@ func TestGetMethod(t *testing.T) {
 			want: want{
 				code:        http.StatusNotFound,
 				contentType: "text/plain; charset=utf-8",
-				realUrl:     "",
+				srealURL:    "",
 			},
 			service: URLService{
 				urls: map[string]string{
@@ -59,7 +59,7 @@ func TestGetMethod(t *testing.T) {
 			want: want{
 				code:        http.StatusNotFound,
 				contentType: "text/plain; charset=utf-8",
-				realUrl:     "",
+				srealURL:    "",
 			},
 			service: URLService{
 				urls: map[string]string{
@@ -74,7 +74,7 @@ func TestGetMethod(t *testing.T) {
 			want: want{
 				code:        http.StatusNotFound,
 				contentType: "text/plain; charset=utf-8",
-				realUrl:     "",
+				srealURL:    "",
 			},
 			service: URLService{
 				urls: map[string]string{
@@ -89,7 +89,7 @@ func TestGetMethod(t *testing.T) {
 			want: want{
 				code:        http.StatusTemporaryRedirect,
 				contentType: "text/html; charset=utf-8",
-				realUrl:     "https://practicum.yandex.ru/",
+				srealURL:    "https://practicum.yandex.ru/",
 			},
 			service: URLService{
 				urls: map[string]string{
@@ -106,7 +106,7 @@ func TestGetMethod(t *testing.T) {
 			want: want{
 				code:        http.StatusTemporaryRedirect,
 				contentType: "text/html; charset=utf-8",
-				realUrl:     "https://practicum.yandex.ru/",
+				srealURL:    "https://practicum.yandex.ru/",
 			},
 			service: URLService{
 				urls: map[string]string{
@@ -128,20 +128,18 @@ func TestGetMethod(t *testing.T) {
 			res := w.Result()
 
 			assert.Equal(t, test.want.code, res.StatusCode)
-			assert.Equal(t, test.want.realUrl, res.Header.Get("Location"))
+			assert.Equal(t, test.want.srealURL, res.Header.Get("Location"))
 			assert.Equal(t, test.want.contentType, res.Header.Get("Content-Type"))
 		})
 	}
 
 }
 
-
-
 func TestPostMethod(t *testing.T) {
 	type want struct {
-		code int
-		urls map[string]string
-		body string
+		code        int
+		urls        map[string]string
+		body        string
 		contentType string
 	}
 	tests := []struct {
@@ -154,7 +152,7 @@ func TestPostMethod(t *testing.T) {
 			name:        "add new item in map",
 			requestBody: "https://practicum.yandex.ru/",
 			want: want{
-				code: http.StatusCreated,
+				code:        http.StatusCreated,
 				contentType: "text/plain",
 				urls: map[string]string{
 					"abc123": "https://practicum.yandex.ru/",
@@ -171,7 +169,7 @@ func TestPostMethod(t *testing.T) {
 			name:        "several items in map",
 			requestBody: "https://practicum.yandex.ru/",
 			want: want{
-				code: http.StatusCreated,
+				code:        http.StatusCreated,
 				contentType: "text/plain",
 				urls: map[string]string{
 					"sff":    "https://logo.com/",
@@ -192,11 +190,10 @@ func TestPostMethod(t *testing.T) {
 			name:        "error wrong generateId() function",
 			requestBody: "https://practicum.yandex.ru/",
 			want: want{
-				code: http.StatusInternalServerError,
+				code:        http.StatusInternalServerError,
 				contentType: "text/plain; charset=utf-8",
-				urls: map[string]string{},
-				body: "generation failed\n",
-				
+				urls:        map[string]string{},
+				body:        "generation failed\n",
 			},
 			service: URLService{
 				urls:        map[string]string{},

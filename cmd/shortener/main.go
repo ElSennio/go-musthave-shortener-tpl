@@ -60,14 +60,14 @@ func (service *URLService) postMethod(res http.ResponseWriter, req *http.Request
 	originalURL := string(data)
 
 	// 2. Генерируем случайную строку id, которую затем положим в мапу
-	strId, err := service.generateID()
+	strID, err := service.generateID()
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	service.urls[strId] = originalURL
+	service.urls[strID] = originalURL
 
-	body := config.ConfigFlags.BaseURL + "/" + strId
+	body := config.ConfigFlags.BaseURL + "/" + strID
 
 	// 3. Выводим в печать для клиента
 	res.Header().Set("Content-Type", "text/plain")

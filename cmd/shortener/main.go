@@ -3,10 +3,13 @@ package main
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"flag"
 	"fmt"
-	"github.com/go-chi/chi/v5"
 	"io"
 	"net/http"
+
+	"github.com/ElSennio/go-musthave-shortener-tpl/internal/config"
+	"github.com/go-chi/chi/v5"
 )
 
 type URLService struct {
@@ -64,7 +67,7 @@ func (service *URLService) postMethod(res http.ResponseWriter, req *http.Request
 	}
 	service.urls[strId] = originalURL
 
-	body := "http://" + req.Host + "/" + strId
+	body := config.ConfigFlags.BaseURL + "/" + strId
 
 	// 3. Выводим в печать для клиента
 	res.Header().Set("Content-Type", "text/plain")
@@ -74,6 +77,8 @@ func (service *URLService) postMethod(res http.ResponseWriter, req *http.Request
 
 func main() {
 
+	flag.Parse()
+
 	service := &URLService{
 		urls: make(map[string]string),
 	}
@@ -82,7 +87,7 @@ func main() {
 	r.Post("/", service.postMethod)
 	r.Get("/{id}", service.getMethod)
 
-	err := http.ListenAndServe(":8080", r)
+	err := http.ListenAndServe(config.ConfigFlags.ServerAddress, r)
 	if err != nil {
 		panic(err)
 	}
